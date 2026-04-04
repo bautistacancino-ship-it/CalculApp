@@ -18,7 +18,13 @@ import {
   CheckCircle2,
   Settings2,
   Info,
-  X
+  X,
+  GraduationCap,
+  Sprout,
+  Trophy,
+  FileText,
+  Copy,
+  Check
 } from 'lucide-react';
 import { BudgetState, CalculationResult } from './types';
 import { SERVICE_TYPES, DEFAULT_HOURLY_RATE, EXPERIENCE_MULTIPLIERS } from './constants';
@@ -104,6 +110,15 @@ const INITIAL_STATE: BudgetState = {
     externalProviders: 0,
   },
   retentionYear: 'none',
+  proposal: {
+    clientName: '',
+    companyName: '',
+    projectTitle: '',
+    projectDescription: '',
+    deliveryTime: '',
+    paymentMethod: '50/50',
+    validity: '15 días',
+  },
 };
 
 export default function App() {
@@ -127,7 +142,7 @@ export default function App() {
     setResult(calculateBudget(state));
   }, [state]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 6));
+  const nextStep = () => setStep(s => Math.min(s + 1, 7));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const calculateDetailedHourlyRate = () => {
@@ -158,9 +173,12 @@ export default function App() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex items-center gap-2 text-brand-600 mb-2">
-              <Settings2 className="w-5 h-5" />
-              <h2 className="text-xl">Cálculo de Tarifa Base</h2>
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <Settings2 className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">1.- Cálculo de Tarifa Base</h2>
+              <p className="text-slate-500 text-sm">Define tu valor hora según tus metas y gastos</p>
             </div>
             
             <div className="bg-brand-50 p-4 rounded-2xl border border-brand-100 mb-6">
@@ -227,20 +245,22 @@ export default function App() {
               </label>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { id: 'student', label: 'Estudiante', icon: '🎓' },
-                  { id: 'junior', label: 'Junior / Inicios', icon: '🌱' },
-                  { id: 'senior', label: 'Senior / Experto', icon: '🏆' }
+                  { id: 'student', label: 'Estudiante', icon: GraduationCap },
+                  { id: 'junior', label: 'Junior / Inicios', icon: Sprout },
+                  { id: 'senior', label: 'Senior / Experto', icon: Trophy }
                 ].map((exp) => (
                   <button
                     key={exp.id}
                     onClick={() => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, experienceLevel: exp.id as any } })}
-                    className={`p-3 rounded-xl border-2 transition-all text-center ${
+                    className={`p-3 rounded-xl border-2 transition-all text-center flex flex-col items-center justify-center ${
                       state.hourlyRateCalc.experienceLevel === exp.id 
                         ? 'border-brand-600 bg-brand-50 text-brand-700' 
                         : 'border-slate-100 hover:border-slate-200 text-slate-500'
                     }`}
                   >
-                    <div className="text-xl mb-1">{exp.icon}</div>
+                    <div className={`mb-1.5 ${state.hourlyRateCalc.experienceLevel === exp.id ? 'text-brand-600' : 'text-slate-400'}`}>
+                      <exp.icon className="w-6 h-6" />
+                    </div>
                     <div className="text-[10px] font-bold uppercase tracking-tight">{exp.label}</div>
                   </button>
                 ))}
@@ -287,9 +307,12 @@ export default function App() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex items-center gap-2 text-brand-600 mb-2">
-              <Clock className="w-5 h-5" />
-              <h2 className="text-xl">Datos del Proyecto</h2>
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <Clock className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">2.- Datos del Proyecto</h2>
+              <p className="text-slate-500 text-sm">Categoría y tiempo estimado de ejecución</p>
             </div>
             
             <div className="space-y-4">
@@ -356,9 +379,12 @@ export default function App() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex items-center gap-2 text-brand-600 mb-2">
-              <Zap className="w-5 h-5" />
-              <h2 className="text-xl">Complejidad y Tiempos</h2>
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">3.- Complejidad y Tiempos</h2>
+              <p className="text-slate-500 text-sm">Urgencia y entregables adicionales</p>
             </div>
 
             <div className="space-y-4">
@@ -424,9 +450,12 @@ export default function App() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex items-center gap-2 text-brand-600 mb-2">
-              <Globe className="w-5 h-5" />
-              <h2 className="text-xl">Impacto y Licencias</h2>
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <Globe className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">4.- Impacto y Licencias</h2>
+              <p className="text-slate-500 text-sm">Alcance y tamaño del cliente</p>
             </div>
 
             <div className="space-y-4">
@@ -484,9 +513,12 @@ export default function App() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex items-center gap-2 text-brand-600 mb-2">
-              <PlusCircle className="w-5 h-5" />
-              <h2 className="text-xl">Costos Extra</h2>
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <PlusCircle className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">5.- Costos Extra</h2>
+              <p className="text-slate-500 text-sm">Gastos adicionales del proyecto</p>
             </div>
 
             <div className="space-y-4">
@@ -539,8 +571,8 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6"
           >
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full mb-4">
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full mb-4 shadow-sm">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h2 className="text-3xl font-bold text-slate-900">Presupuesto Final</h2>
@@ -644,11 +676,179 @@ export default function App() {
               </div>
             </div>
 
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setStep(1)}
+                className="flex-1 p-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+              >
+                Nuevo Cálculo
+              </button>
+              <button 
+                onClick={() => setStep(7)}
+                className="flex-[2] p-4 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
+              >
+                Generar Propuesta Comercial
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        );
+
+      case 7:
+        const proposalText = `
+Estimado(a) ${state.proposal.clientName || '[Nombre del Cliente]'} de ${state.proposal.companyName || '[Empresa]'}:
+
+Es un gusto saludarte. En relación a nuestra conversación sobre el proyecto "${state.proposal.projectTitle || 'Proyecto de Diseño'}", presento a continuación la propuesta formal para el desarrollo del mismo.
+
+El proyecto consiste en: ${state.proposal.projectDescription || '[Descripción del proyecto]'}. Para llevarlo a cabo, se contempla un servicio de ${state.project.serviceType} con una dedicación estimada de ${state.project.estimatedHours} horas de trabajo profesional.
+
+La propuesta incluye ${state.complexity.revisions} rondas de revisiones para asegurar que el resultado final cumpla con tus expectativas ${state.complexity.includeSourceFiles ? 'e integra la entrega de todos los archivos fuente originales' : 'y la entrega de los archivos finales listos para su uso'}.
+
+La inversión total para este proyecto es de $${result?.finalTotal.toLocaleString('es-CL')} CLP${state.retentionYear !== 'none' ? ` (Monto Bruto con retención: $${result?.grossTotal.toLocaleString('es-CL')} CLP)` : ''}.
+
+En cuanto a las condiciones comerciales, el plazo de entrega estimado es de ${state.proposal.deliveryTime || 'a convenir'}, bajo una modalidad de pago de ${state.proposal.paymentMethod}. Esta cotización tiene una validez de ${state.proposal.validity} a contar de la fecha de hoy, ${new Date().toLocaleDateString('es-CL')}.
+
+Quedo atento(a) a tus comentarios para dar inicio a esta colaboración.
+
+Saludos cordiales,
+
+[Tu Nombre / Firma]
+--------------------------------------------------
+Propuesta generada con CalculApp.pro
+        `.trim();
+
+        return (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div className="text-left mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-100 text-brand-600 rounded-2xl mb-4 shadow-sm">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">7.- Propuesta Comercial</h2>
+              <p className="text-slate-500 text-sm">Genera el texto para enviar a tu cliente</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Cliente</label>
+                  <input 
+                    type="text" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.proposal.clientName}
+                    onChange={e => setState({ ...state, proposal: { ...state.proposal, clientName: e.target.value } })}
+                    placeholder="Ej: Juan Pérez"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Empresa</label>
+                  <input 
+                    type="text" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.proposal.companyName}
+                    onChange={e => setState({ ...state, proposal: { ...state.proposal, companyName: e.target.value } })}
+                    placeholder="Ej: Diseño SpA"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Título del Proyecto</label>
+                <input 
+                  type="text" 
+                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                  value={state.proposal.projectTitle}
+                  onChange={e => setState({ ...state, proposal: { ...state.proposal, projectTitle: e.target.value } })}
+                  placeholder="Ej: Rediseño de Logotipo"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Descripción del Proyecto</label>
+                <textarea 
+                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none min-h-[100px]"
+                  value={state.proposal.projectDescription}
+                  onChange={e => setState({ ...state, proposal: { ...state.proposal, projectDescription: e.target.value } })}
+                  placeholder="Describe brevemente los entregables y el alcance..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Plazo de Entrega</label>
+                  <input 
+                    type="text" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.proposal.deliveryTime}
+                    onChange={e => setState({ ...state, proposal: { ...state.proposal, deliveryTime: e.target.value } })}
+                    placeholder="Ej: 10 días hábiles"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Modalidad de Pago</label>
+                  <select 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.proposal.paymentMethod}
+                    onChange={e => setState({ ...state, proposal: { ...state.proposal, paymentMethod: e.target.value as any } })}
+                  >
+                    <option value="100% anticipo">100% anticipo</option>
+                    <option value="50/50">50% anticipo / 50% entrega</option>
+                    <option value="30/30/40">30% inicio / 30% avance / 40% entrega</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Validez</label>
+                  <select 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.proposal.validity}
+                    onChange={e => setState({ ...state, proposal: { ...state.proposal, validity: e.target.value as any } })}
+                  >
+                    <option value="7 días">7 días</option>
+                    <option value="15 días">15 días</option>
+                    <option value="30 días">30 días</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <label className="block text-sm font-bold text-slate-700 mb-2">Vista Previa de la Propuesta</label>
+              <div className="relative group">
+                <pre className="w-full p-6 bg-slate-900 text-slate-300 rounded-2xl text-xs font-mono whitespace-pre-wrap border border-slate-800 leading-relaxed">
+                  {proposalText}
+                </pre>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(proposalText);
+                    const btn = document.getElementById('copy-btn');
+                    if (btn) {
+                      const original = btn.innerHTML;
+                      btn.innerHTML = '¡Copiado!';
+                      btn.classList.add('bg-emerald-500');
+                      setTimeout(() => {
+                        btn.innerHTML = original;
+                        btn.classList.remove('bg-emerald-500');
+                      }, 2000);
+                    }
+                  }}
+                  id="copy-btn"
+                  className="absolute top-4 right-4 p-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2 text-xs font-bold shadow-lg"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copiar Propuesta
+                </button>
+              </div>
+            </div>
+
             <button 
-              onClick={() => setStep(1)}
+              onClick={() => setStep(6)}
               className="w-full p-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
             >
-              Nuevo Cálculo
+              Volver al Resumen
             </button>
           </motion.div>
         );
@@ -685,32 +885,35 @@ export default function App() {
         </div>
 
         {/* Progress Bar */}
-        {step < 6 && (
+        {step < 8 && (
           <div className="mb-10">
             <div className="flex justify-between mb-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div 
-                  key={i} 
-                  className={`flex flex-col items-center gap-2 transition-all duration-500 ${step >= i ? 'text-brand-600' : 'text-slate-300'}`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
-                    step === i ? 'border-brand-600 bg-brand-600 text-white scale-110 shadow-lg shadow-brand-100' : 
-                    step > i ? 'border-brand-600 bg-brand-50 text-brand-600' : 
-                    'border-slate-200 bg-white text-slate-300'
-                  }`}>
-                    {step > i ? <CheckCircle2 className="w-5 h-5" /> : i}
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => {
+                const Icon = i === 1 ? Settings2 : i === 2 ? Clock : i === 3 ? Zap : i === 4 ? Globe : i === 5 ? PlusCircle : i === 6 ? CheckCircle2 : FileText;
+                return (
+                  <div 
+                    key={i} 
+                    className={`flex flex-col items-center gap-1.5 transition-all duration-500 ${step >= i ? 'text-brand-600' : 'text-slate-300'}`}
+                  >
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 ${
+                      step === i ? 'border-brand-600 bg-brand-600 text-white scale-110 shadow-lg shadow-brand-100' : 
+                      step > i ? 'border-brand-600 bg-brand-50 text-brand-600' : 
+                      'border-slate-200 bg-white text-slate-300'
+                    }`}>
+                      {step > i ? <CheckCircle2 className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter text-center">
+                      {i}.- {i === 1 ? 'Tarifa' : i === 2 ? 'Proyecto' : i === 3 ? 'Tiempos' : i === 4 ? 'Impacto' : i === 5 ? 'Extras' : i === 6 ? 'Resumen' : 'Propuesta'}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-tighter">
-                    {i === 1 ? 'Tarifa' : i === 2 ? 'Proyecto' : i === 3 ? 'Tiempos' : i === 4 ? 'Impacto' : 'Extras'}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-brand-600"
                 initial={{ width: '0%' }}
-                animate={{ width: `${(step - 1) * 25}%` }}
+                animate={{ width: `${(step - 1) * (100/6)}%` }}
                 transition={{ duration: 0.5 }}
               />
             </div>

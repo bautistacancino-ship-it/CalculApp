@@ -34,6 +34,16 @@ export interface HourlyRateCalculation {
   experienceLevel: ExperienceLevel;
 }
 
+export interface ProposalData {
+  clientName: string;
+  companyName: string;
+  projectTitle: string;
+  projectDescription: string;
+  deliveryTime: string;
+  paymentMethod: '100% anticipo' | '50/50' | '30/30/40';
+  validity: '7 días' | '15 días' | '30 días';
+}
+
 export interface BudgetState {
   hourlyRateCalc: HourlyRateCalculation;
   project: ProjectData;
@@ -41,6 +51,7 @@ export interface BudgetState {
   impact: ImpactData;
   extras: ExtraCostsData;
   retentionYear: RetentionYear;
+  proposal: ProposalData;
 }
 
 export interface CalculationResult {
