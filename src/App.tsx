@@ -5,7 +5,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import logo from '../public/logoapp.jpg';
+
+const LOGO_URL = "https://lh3.googleusercontent.com/d/131Hnqre2rrpTnrQQFijkcq2vvKBSC-fS";
+
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -626,10 +628,18 @@ export default function App() {
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl shadow-lg shadow-brand-200 overflow-hidden bg-white border border-slate-100">
               <img 
-                src={logo} 
+                src={LOGO_URL} 
                 alt="CalculApp.pro Logo" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-brand-500 text-white font-bold text-xl">C</div>';
+                  }
+                }}
               />
             </div>
             <div>
