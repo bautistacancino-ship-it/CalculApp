@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+Disallow: /admin/
+
+Sitemap: https://ais-dev-cyribcrk25idveikkmsxpd-556280711356.us-east1.run.app/sitemap.xml
