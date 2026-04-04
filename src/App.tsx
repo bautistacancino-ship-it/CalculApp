@@ -5,8 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import logo from '../public/logoapp.jpg';
 import { 
-  Calculator, 
   ChevronRight, 
   ChevronLeft, 
   Clock, 
@@ -35,7 +35,7 @@ const HELP_TEXT = {
   fonts: "Costo de licencias tipográficas específicas para el proyecto.",
   externalProviders: "Gastos de impresión, hosting, fotografía externa u otros colaboradores.",
   desiredSalary: "El sueldo neto que aspiras ganar mensualmente después de impuestos.",
-  monthlyExpenses: "Suma de alquiler, software (Adobe, Figma), internet, hardware y otros gastos fijos.",
+  monthlyExpenses: "Suma de arriendo, software (Adobe, Figma), internet, hardware y otros gastos fijos.",
   workingDays: "Días que realmente trabajas al mes (ej: 20 días si descansas fines de semana).",
   hoursPerDay: "Horas totales que dedicas al trabajo cada día.",
   productivityFactor: "Porcentaje de tus horas que son realmente facturables (reuniones, administración y descansos no se cobran).",
@@ -624,12 +624,17 @@ export default function App() {
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
-            <div className="bg-brand-600 p-2.5 rounded-2xl shadow-lg shadow-brand-200">
-              <Calculator className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-2xl shadow-lg shadow-brand-200 overflow-hidden bg-white border border-slate-100">
+              <img 
+                src={logo} 
+                alt="CalculApp.pro Logo" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">CalculApp</h1>
-              <p className="text-xs text-slate-500 font-medium tracking-wide">Calculadora de presupuesto de diseños V1.0</p>
+              <h1 className="text-2xl font-bold text-slate-900">CalculApp<span className="text-brand-600">.pro</span></h1>
+              <p className="text-xs text-slate-500 font-medium tracking-wide">Presupuesto de diseños.</p>
             </div>
           </div>
         </div>
@@ -718,7 +723,7 @@ export default function App() {
             Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
           </p>
           <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
-            © 2026 CalculApp Studio
+            © 2026 CalculApp.pro Studio
           </p>
         </div>
       </div>
