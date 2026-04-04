@@ -9,7 +9,6 @@ import {
   Calculator, 
   ChevronRight, 
   ChevronLeft, 
-  Save, 
   Clock, 
   Zap, 
   Globe, 
@@ -108,7 +107,6 @@ export default function App() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<BudgetState>(INITIAL_STATE);
   const [result, setResult] = useState<CalculationResult | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
 
   // Load preferences
   useEffect(() => {
@@ -125,12 +123,6 @@ export default function App() {
   useEffect(() => {
     setResult(calculateBudget(state));
   }, [state]);
-
-  const savePreferences = () => {
-    localStorage.setItem('design_calc_hourly_rate', state.project.hourlyRate.toString());
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
-  };
 
   const nextStep = () => setStep(s => Math.min(s + 1, 6));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -343,19 +335,11 @@ export default function App() {
                 <div className="flex gap-2">
                   <input 
                     type="number" 
-                    className="flex-1 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
                     value={state.project.hourlyRate}
                     onChange={e => setState({ ...state, project: { ...state.project, hourlyRate: parseFloat(e.target.value) || 0 } })}
                   />
-                  <button 
-                    onClick={savePreferences}
-                    className={`px-4 rounded-xl flex items-center gap-2 transition-all ${isSaved ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                  >
-                    {isSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    <span className="text-sm font-medium">{isSaved ? 'Guardado' : 'Guardar'}</span>
-                  </button>
                 </div>
-                <p className="text-xs text-slate-400 mt-2 italic">Tip: Guarda tu tarifa base para futuros cálculos.</p>
               </div>
             </div>
           </motion.div>
@@ -726,11 +710,15 @@ export default function App() {
         </div>
 
         {/* Footer Info */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-2">
           <p className="text-slate-400 text-sm">
             Diseñado para profesionales creativos. 
-            <br />
-            <span className="text-slate-300">© 2026 CalculApp Studio</span>
+          </p>
+          <p className="text-xs text-slate-400">
+            Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
+          </p>
+          <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
+            © 2026 CalculApp Studio
           </p>
         </div>
       </div>
