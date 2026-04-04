@@ -42,6 +42,14 @@ export interface ProposalData {
   deliveryTime: string;
   paymentMethod: '100% anticipo' | '50/50' | '30/30/40';
   validity: '7 días' | '15 días' | '30 días';
+  clauses: {
+    intellectualProperty: boolean;
+    excessRevisions: boolean;
+    inactivityPause: boolean;
+    exhibitionRights: boolean;
+    contentResponsibility: boolean;
+    cancellation: boolean;
+  };
 }
 
 export interface BudgetState {

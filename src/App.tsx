@@ -24,7 +24,14 @@ import {
   Trophy,
   FileText,
   Copy,
-  Check
+  Check,
+  Lock,
+  ShieldCheck,
+  AlertCircle,
+  Eye,
+  FileCheck,
+  Ban,
+  Shield
 } from 'lucide-react';
 import { BudgetState, CalculationResult } from './types';
 import { SERVICE_TYPES, DEFAULT_HOURLY_RATE, EXPERIENCE_MULTIPLIERS } from './constants';
@@ -118,6 +125,14 @@ const INITIAL_STATE: BudgetState = {
     deliveryTime: '',
     paymentMethod: '50/50',
     validity: '15 días',
+    clauses: {
+      intellectualProperty: true,
+      excessRevisions: true,
+      inactivityPause: false,
+      exhibitionRights: false,
+      contentResponsibility: false,
+      cancellation: true,
+    },
   },
 };
 
@@ -695,6 +710,18 @@ export default function App() {
         );
 
       case 7:
+        const selectedClauses = [];
+        if (state.proposal.clauses.intellectualProperty) selectedClauses.push("1. Propiedad Intelectual: Los derechos de uso y archivos finales serán propiedad del cliente únicamente tras haber liquidado el 100% del pago total.");
+        if (state.proposal.clauses.excessRevisions) selectedClauses.push(`2. Exceso de Revisiones: Toda revisión adicional a las ${state.complexity.revisions} incluidas, tendrá un costo adicional del 20% del valor del proyecto por cada nueva ronda.`);
+        if (state.proposal.clauses.inactivityPause) selectedClauses.push("3. Pausa por Inactividad: Si el proyecto se detiene por más de 15 días por falta de respuesta del cliente, se considerará pausado y su reactivación tendrá un costo administrativo del 10%.");
+        if (state.proposal.clauses.exhibitionRights) selectedClauses.push("4. Derechos de Exhibición: El diseñador se reserva el derecho de exhibir el trabajo realizado en su portafolio profesional y redes sociales con fines promocionales.");
+        if (state.proposal.clauses.contentResponsibility) selectedClauses.push("5. Responsabilidad de Contenido: El cliente garantiza que todo el material (fotos, textos, logos) entregado para el proyecto es de su propiedad o tiene los derechos de uso correspondientes.");
+        if (state.proposal.clauses.cancellation) selectedClauses.push("6. Cláusula de Cancelación: En caso de cancelación por parte del cliente tras haber iniciado el trabajo, el anticipo no será reembolsable como compensación por el tiempo reservado.");
+
+        const termsText = selectedClauses.length > 0 
+          ? `\n\nTérminos y Condiciones del Servicio:\n${selectedClauses.join('\n')}`
+          : '';
+
         const proposalText = `
 Estimado(a) ${state.proposal.clientName || '[Nombre del Cliente]'} de ${state.proposal.companyName || '[Empresa]'}:
 
@@ -712,10 +739,40 @@ Quedo atento(a) a tus comentarios para dar inicio a esta colaboración.
 
 Saludos cordiales,
 
-[Tu Nombre / Firma]
+[Tu Nombre / Firma]${termsText}
 --------------------------------------------------
 Propuesta generada con CalculApp.pro
         `.trim();
+
+        const toggleClause = (key: keyof typeof state.proposal.clauses) => {
+          setState({
+            ...state,
+            proposal: {
+              ...state.proposal,
+              clauses: {
+                ...state.proposal.clauses,
+                [key]: !state.proposal.clauses[key]
+              }
+            }
+          });
+        };
+
+        const applyPreset = () => {
+          setState({
+            ...state,
+            proposal: {
+              ...state.proposal,
+              clauses: {
+                intellectualProperty: true,
+                excessRevisions: true,
+                inactivityPause: false,
+                exhibitionRights: false,
+                contentResponsibility: false,
+                cancellation: true,
+              }
+            }
+          });
+        };
 
         return (
           <motion.div 
@@ -815,10 +872,70 @@ Propuesta generada con CalculApp.pro
               </div>
             </div>
 
+            {/* Protection Clauses Section */}
+            <div className="mt-8 p-6 bg-brand-50 rounded-[2rem] border border-brand-100">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-brand-200">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">Escudo de Protección</h3>
+                    <p className="text-xs text-slate-500 font-medium">Configuración de Contrato y Cláusulas</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={applyPreset}
+                  className="px-4 py-2 bg-white text-brand-600 border border-brand-200 rounded-xl text-xs font-bold hover:bg-brand-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  Preset Recomendado
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { key: 'intellectualProperty', label: 'Propiedad Intelectual', icon: Lock, desc: 'Pago 100% para cesión de derechos.' },
+                  { key: 'excessRevisions', label: 'Exceso de Revisiones', icon: Clock, desc: 'Cobro adicional por cambios extra.' },
+                  { key: 'inactivityPause', label: 'Pausa por Inactividad', icon: AlertCircle, desc: 'Recargo por proyectos detenidos.' },
+                  { key: 'exhibitionRights', label: 'Derechos de Exhibición', icon: Eye, desc: 'Permiso para usar en portafolio.' },
+                  { key: 'contentResponsibility', label: 'Responsabilidad de Contenido', icon: FileCheck, desc: 'Cliente garantiza autoría de material.' },
+                  { key: 'cancellation', label: 'Cláusula de Cancelación', icon: Ban, desc: 'Anticipo no reembolsable.' },
+                ].map((clause) => (
+                  <label 
+                    key={clause.key}
+                    className={`flex items-start gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
+                      state.proposal.clauses[clause.key as keyof typeof state.proposal.clauses]
+                        ? 'bg-white border-brand-500 shadow-md shadow-brand-100'
+                        : 'bg-slate-50/50 border-transparent hover:border-slate-200'
+                    }`}
+                  >
+                    <div className="pt-0.5">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                        checked={state.proposal.clauses[clause.key as keyof typeof state.proposal.clauses]}
+                        onChange={() => toggleClause(clause.key as keyof typeof state.proposal.clauses)}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <clause.icon className={`w-3.5 h-3.5 ${state.proposal.clauses[clause.key as keyof typeof state.proposal.clauses] ? 'text-brand-600' : 'text-slate-400'}`} />
+                        <span className={`text-xs font-bold ${state.proposal.clauses[clause.key as keyof typeof state.proposal.clauses] ? 'text-brand-700' : 'text-slate-600'}`}>
+                          {clause.label}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-tight">{clause.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="mt-8">
               <label className="block text-sm font-bold text-slate-700 mb-2">Vista Previa de la Propuesta</label>
               <div className="relative group">
-                <pre className="w-full p-6 bg-slate-900 text-slate-300 rounded-2xl text-xs font-mono whitespace-pre-wrap border border-slate-800 leading-relaxed">
+                <pre className="w-full p-6 bg-slate-900 text-slate-300 rounded-2xl text-xs font-mono whitespace-pre-wrap border border-slate-800 leading-relaxed max-h-[400px] overflow-y-auto custom-scrollbar">
                   {proposalText}
                 </pre>
                 <button 
