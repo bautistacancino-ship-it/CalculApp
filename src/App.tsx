@@ -645,7 +645,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-slate-900">CalculApp</h1>
-              <p className="text-xs text-slate-500 font-medium">Calculadora de Presupuestos v1.0</p>
+              <p className="text-xs text-slate-500 font-medium tracking-wide">Calculadora de presupuesto de diseños V1.0</p>
             </div>
           </div>
         </div>
