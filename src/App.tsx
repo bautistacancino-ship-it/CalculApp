@@ -103,6 +103,7 @@ const INITIAL_STATE: BudgetState = {
     fonts: 0,
     externalProviders: 0,
   },
+  retentionYear: 'none',
 };
 
 export default function App() {
@@ -603,6 +604,40 @@ export default function App() {
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">Costos Extra (Stock, Fuentes, etc.)</span>
                       <span>${result.extraCostsTotal.toLocaleString('es-CL')}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Boleta de Honorarios Section */}
+                <div className="mt-8 pt-6 border-t border-slate-800">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Boleta de Honorarios</h4>
+                    <select 
+                      className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-brand-500"
+                      value={state.retentionYear}
+                      onChange={(e) => setState({ ...state, retentionYear: e.target.value as any })}
+                    >
+                      <option value="none">Sin Boleta</option>
+                      <option value="2026">Año 2026 (15.25%)</option>
+                      <option value="2027">Año 2027 (16%)</option>
+                      <option value="2028">Año 2028 (17%)</option>
+                    </select>
+                  </div>
+
+                  {state.retentionYear !== 'none' && result && (
+                    <div className="space-y-3 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 text-xs">Monto Líquido (Lo que recibes)</span>
+                        <span className="font-bold text-brand-400">${result.finalTotal.toLocaleString('es-CL')}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 text-xs">Retención ({(result.retentionRate * 100).toFixed(2)}%)</span>
+                        <span className="text-red-400 text-xs">-${result.retentionAmount.toLocaleString('es-CL')}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-700">
+                        <span className="text-slate-200 text-sm font-bold">Monto Bruto (Lo que cobras)</span>
+                        <span className="text-xl font-bold text-white">${result.grossTotal.toLocaleString('es-CL')}</span>
+                      </div>
                     </div>
                   )}
                 </div>

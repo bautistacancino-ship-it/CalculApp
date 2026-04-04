@@ -33,8 +33,26 @@ export function calculateBudget(state: BudgetState): CalculationResult {
   // 6. Costos Extra
   const extraCostsTotal = extras.stock + extras.fonts + extras.externalProviders;
 
-  // 7. Total Final
+  // 7. Total Final (Líquido)
   const finalTotal = subtotal + extraCostsTotal;
+
+  // 8. Retención de Boletas de Honorarios (Chile)
+  const retentionRates: Record<string, number> = {
+    '2026': 0.1525,
+    '2027': 0.16,
+    '2028': 0.17,
+    'none': 0
+  };
+
+  const retentionRate = retentionRates[state.retentionYear] || 0;
+  
+  // Si finalTotal es lo que el diseñador quiere recibir (Líquido), 
+  // calculamos el Bruto (lo que debe cobrar en la boleta)
+  const grossTotal = retentionRate > 0 
+    ? Math.round(finalTotal / (1 - retentionRate))
+    : finalTotal;
+    
+  const retentionAmount = grossTotal - finalTotal;
 
   return {
     baseCost: rawBaseCost,
@@ -44,6 +62,9 @@ export function calculateBudget(state: BudgetState): CalculationResult {
     sourceFilesSurcharge,
     subtotal,
     extraCostsTotal,
-    finalTotal
+    finalTotal,
+    retentionRate,
+    retentionAmount,
+    grossTotal
   };
 }

@@ -23,6 +23,7 @@ export interface ExtraCostsData {
 }
 
 export type ExperienceLevel = 'student' | 'junior' | 'senior';
+export type RetentionYear = '2026' | '2027' | '2028' | 'none';
 
 export interface HourlyRateCalculation {
   desiredSalary: number;
@@ -39,6 +40,7 @@ export interface BudgetState {
   complexity: ComplexityData;
   impact: ImpactData;
   extras: ExtraCostsData;
+  retentionYear: RetentionYear;
 }
 
 export interface CalculationResult {
@@ -50,4 +52,7 @@ export interface CalculationResult {
   subtotal: number;
   extraCostsTotal: number;
   finalTotal: number;
+  retentionRate: number;
+  retentionAmount: number;
+  grossTotal: number;
 }
