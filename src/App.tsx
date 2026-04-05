@@ -57,6 +57,21 @@ const HELP_TEXT = {
   experienceLevel: "Tu nivel de experiencia influye en el valor de mercado de tu trabajo (Estudiante: -30%, Junior: Base, Senior: +50%)."
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
 function InfoTooltip({ text }: { text: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -196,121 +211,132 @@ export default function App() {
               <p className="text-slate-500 text-sm">Define tu valor hora según tus metas y gastos</p>
             </div>
             
-            <div className="bg-brand-50 p-4 rounded-2xl border border-brand-100 mb-6">
-              <p className="text-sm text-brand-800 font-medium">
-                Tu tarifa actual calculada: <span className="text-lg font-bold">${calculateDetailedHourlyRate().toLocaleString('es-CL')} / hora</span>
-              </p>
-            </div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-6"
+            >
+              <motion.div variants={itemVariants} className="bg-brand-50 p-4 rounded-2xl border border-brand-100 mb-6">
+                <p className="text-sm text-brand-800 font-medium">
+                  Tu tarifa actual calculada: <span className="text-lg font-bold">${calculateDetailedHourlyRate().toLocaleString('es-CL')} / hora</span>
+                </p>
+              </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Sueldo Deseado ($)
-                  <InfoTooltip text={HELP_TEXT.desiredSalary} />
+              <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Sueldo Deseado ($)
+                    <InfoTooltip text={HELP_TEXT.desiredSalary} />
+                  </label>
+                  <input 
+                    type="number" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.hourlyRateCalc.desiredSalary}
+                    onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, desiredSalary: parseFloat(e.target.value) || 0 } })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Gastos Mensuales ($)
+                    <InfoTooltip text={HELP_TEXT.monthlyExpenses} />
+                  </label>
+                  <input 
+                    type="number" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.hourlyRateCalc.monthlyExpenses}
+                    onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, monthlyExpenses: parseFloat(e.target.value) || 0 } })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Días Laborales / Mes
+                    <InfoTooltip text={HELP_TEXT.workingDays} />
+                  </label>
+                  <input 
+                    type="number" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.hourlyRateCalc.workingDays}
+                    onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, workingDays: parseInt(e.target.value) || 0 } })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Horas / Día
+                    <InfoTooltip text={HELP_TEXT.hoursPerDay} />
+                  </label>
+                  <input 
+                    type="number" 
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={state.hourlyRateCalc.hoursPerDay}
+                    onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, hoursPerDay: parseInt(e.target.value) || 0 } })}
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  Nivel de Experiencia
+                  <InfoTooltip text={HELP_TEXT.experienceLevel} />
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: 'student', label: 'Estudiante', icon: GraduationCap },
+                    { id: 'junior', label: 'Junior / Inicios', icon: Sprout },
+                    { id: 'senior', label: 'Senior / Experto', icon: Trophy }
+                  ].map((exp) => (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      key={exp.id}
+                      onClick={() => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, experienceLevel: exp.id as any } })}
+                      className={`p-3 rounded-xl border-2 transition-all text-center flex flex-col items-center justify-center ${
+                        state.hourlyRateCalc.experienceLevel === exp.id 
+                          ? 'border-brand-600 bg-brand-50 text-brand-700' 
+                          : 'border-slate-100 hover:border-slate-200 text-slate-500'
+                      }`}
+                    >
+                      <div className={`mb-1.5 ${state.hourlyRateCalc.experienceLevel === exp.id ? 'text-brand-600' : 'text-slate-400'}`}>
+                        <exp.icon className="w-6 h-6" />
+                      </div>
+                      <div className="text-[10px] font-bold uppercase tracking-tight">{exp.label}</div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <label className="block text-sm font-medium text-slate-700 mb-1 flex justify-between">
+                  <span>Factor de Productividad <InfoTooltip text={HELP_TEXT.productivityFactor} /></span>
+                  <span>{Math.round(state.hourlyRateCalc.productivityFactor * 100)}%</span>
                 </label>
                 <input 
-                  type="number" 
-                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={state.hourlyRateCalc.desiredSalary}
-                  onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, desiredSalary: parseFloat(e.target.value) || 0 } })}
+                  type="range" 
+                  min="0.1" 
+                  max="1" 
+                  step="0.05"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                  value={state.hourlyRateCalc.productivityFactor}
+                  onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, productivityFactor: parseFloat(e.target.value) } })}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Gastos Mensuales ($)
-                  <InfoTooltip text={HELP_TEXT.monthlyExpenses} />
-                </label>
-                <input 
-                  type="number" 
-                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={state.hourlyRateCalc.monthlyExpenses}
-                  onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, monthlyExpenses: parseFloat(e.target.value) || 0 } })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Días Laborales / Mes
-                  <InfoTooltip text={HELP_TEXT.workingDays} />
-                </label>
-                <input 
-                  type="number" 
-                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={state.hourlyRateCalc.workingDays}
-                  onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, workingDays: parseInt(e.target.value) || 0 } })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Horas / Día
-                  <InfoTooltip text={HELP_TEXT.hoursPerDay} />
-                </label>
-                <input 
-                  type="number" 
-                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={state.hourlyRateCalc.hoursPerDay}
-                  onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, hoursPerDay: parseInt(e.target.value) || 0 } })}
-                />
-              </div>
-            </div>
+                <p className="text-[10px] text-slate-400 mt-1 italic">Representa el tiempo real que dedicas a diseñar vs tareas administrativas.</p>
+              </motion.div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-3">
-                Nivel de Experiencia
-                <InfoTooltip text={HELP_TEXT.experienceLevel} />
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { id: 'student', label: 'Estudiante', icon: GraduationCap },
-                  { id: 'junior', label: 'Junior / Inicios', icon: Sprout },
-                  { id: 'senior', label: 'Senior / Experto', icon: Trophy }
-                ].map((exp) => (
-                  <button
-                    key={exp.id}
-                    onClick={() => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, experienceLevel: exp.id as any } })}
-                    className={`p-3 rounded-xl border-2 transition-all text-center flex flex-col items-center justify-center ${
-                      state.hourlyRateCalc.experienceLevel === exp.id 
-                        ? 'border-brand-600 bg-brand-50 text-brand-700' 
-                        : 'border-slate-100 hover:border-slate-200 text-slate-500'
-                    }`}
-                  >
-                    <div className={`mb-1.5 ${state.hourlyRateCalc.experienceLevel === exp.id ? 'text-brand-600' : 'text-slate-400'}`}>
-                      <exp.icon className="w-6 h-6" />
-                    </div>
-                    <div className="text-[10px] font-bold uppercase tracking-tight">{exp.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1 flex justify-between">
-                <span>Factor de Productividad <InfoTooltip text={HELP_TEXT.productivityFactor} /></span>
-                <span>{Math.round(state.hourlyRateCalc.productivityFactor * 100)}%</span>
-              </label>
-              <input 
-                type="range" 
-                min="0.1" 
-                max="1" 
-                step="0.05"
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
-                value={state.hourlyRateCalc.productivityFactor}
-                onChange={e => setState({ ...state, hourlyRateCalc: { ...state.hourlyRateCalc, productivityFactor: parseFloat(e.target.value) } })}
-              />
-              <p className="text-[10px] text-slate-400 mt-1 italic">Representa el tiempo real que dedicas a diseñar vs tareas administrativas.</p>
-            </div>
-
-            <div className="pt-4">
-              <button 
-                onClick={() => {
-                  updateHourlyRateFromCalc();
-                  nextStep();
-                }}
-                className="w-full p-4 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
-              >
-                Usar esta Tarifa y Continuar
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+              <motion.div variants={itemVariants} className="pt-4">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    updateHourlyRateFromCalc();
+                    nextStep();
+                  }}
+                  className="w-full p-4 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
+                >
+                  Usar esta Tarifa y Continuar
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </motion.div>
+            </motion.div>
           </motion.div>
         );
 
@@ -402,15 +428,22 @@ export default function App() {
               <p className="text-slate-500 text-sm">Urgencia y entregables adicionales</p>
             </div>
 
-            <div className="space-y-4">
-              <div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
+              <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-slate-700 mb-3">
                   Nivel de Urgencia
                   <InfoTooltip text={HELP_TEXT.urgency} />
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {(['normal', 'fast', 'urgent'] as const).map((u) => (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       key={u}
                       onClick={() => setState({ ...state, complexity: { ...state.complexity, urgency: u } })}
                       className={`p-3 rounded-xl border-2 transition-all text-sm font-medium capitalize ${
@@ -420,12 +453,12 @@ export default function App() {
                       }`}
                     >
                       {u === 'normal' ? 'Normal' : u === 'fast' ? 'Rápido' : 'Urgente'}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Revisiones Incluidas
                   <InfoTooltip text={HELP_TEXT.revisions} />
@@ -436,9 +469,13 @@ export default function App() {
                   value={state.complexity.revisions}
                   onChange={e => setState({ ...state, complexity: { ...state.complexity, revisions: parseInt(e.target.value) || 0 } })}
                 />
-              </div>
+              </motion.div>
 
-              <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-all border border-slate-200">
+              <motion.label 
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-all border border-slate-200"
+              >
                 <input 
                   type="checkbox" 
                   className="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
@@ -452,8 +489,8 @@ export default function App() {
                   </span>
                   <span className="block text-xs text-slate-500">+50% del costo base por cesión de propiedad intelectual.</span>
                 </div>
-              </label>
-            </div>
+              </motion.label>
+            </motion.div>
           </motion.div>
         );
 
@@ -473,15 +510,22 @@ export default function App() {
               <p className="text-slate-500 text-sm">Alcance y tamaño del cliente</p>
             </div>
 
-            <div className="space-y-4">
-              <div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
+              <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-slate-700 mb-3">
                   Tamaño del Cliente
                   <InfoTooltip text={HELP_TEXT.clientSize} />
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {(['micro', 'pyme', 'corp'] as const).map((s) => (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       key={s}
                       onClick={() => setState({ ...state, impact: { ...state.impact, clientSize: s } })}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
@@ -496,12 +540,12 @@ export default function App() {
                       <span className="text-xs text-slate-500">
                         {s === 'micro' ? 'Impacto limitado, presupuesto ajustado.' : s === 'pyme' ? 'Impacto medio, mayor alcance comercial.' : 'Alto impacto, uso masivo y gran responsabilidad.'}
                       </span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Alcance Geográfico
                   <InfoTooltip text={HELP_TEXT.geographicScope} />
@@ -515,8 +559,8 @@ export default function App() {
                   <option value="national">Nacional</option>
                   <option value="international">Internacional</option>
                 </select>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         );
 
@@ -536,8 +580,13 @@ export default function App() {
               <p className="text-slate-500 text-sm">Gastos adicionales del proyecto</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
+              <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Stock (Fotos/Video)
@@ -562,8 +611,8 @@ export default function App() {
                     onChange={e => setState({ ...state, extras: { ...state.extras, fonts: parseFloat(e.target.value) || 0 } })}
                   />
                 </div>
-              </div>
-              <div>
+              </motion.div>
+              <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Proveedores Externos
                   <InfoTooltip text={HELP_TEXT.externalProviders} />
@@ -574,8 +623,8 @@ export default function App() {
                   value={state.extras.externalProviders}
                   onChange={e => setState({ ...state, extras: { ...state.extras, externalProviders: parseFloat(e.target.value) || 0 } })}
                 />
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         );
 
@@ -893,7 +942,12 @@ Propuesta generada con CalculApp.pro
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
                 {[
                   { key: 'intellectualProperty', label: 'Propiedad Intelectual', icon: Lock, desc: 'Pago 100% para cesión de derechos.' },
                   { key: 'excessRevisions', label: 'Exceso de Revisiones', icon: Clock, desc: 'Cobro adicional por cambios extra.' },
@@ -902,7 +956,10 @@ Propuesta generada con CalculApp.pro
                   { key: 'contentResponsibility', label: 'Responsabilidad de Contenido', icon: FileCheck, desc: 'Cliente garantiza autoría de material.' },
                   { key: 'cancellation', label: 'Cláusula de Cancelación', icon: Ban, desc: 'Anticipo no reembolsable.' },
                 ].map((clause) => (
-                  <label 
+                  <motion.label 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
                     key={clause.key}
                     className={`flex items-start gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
                       state.proposal.clauses[clause.key as keyof typeof state.proposal.clauses]
@@ -927,9 +984,9 @@ Propuesta generada con CalculApp.pro
                       </div>
                       <p className="text-[10px] text-slate-400 leading-tight">{clause.desc}</p>
                     </div>
-                  </label>
+                  </motion.label>
                 ))}
-              </div>
+              </motion.div>
             </div>
 
             <div className="mt-8">
@@ -976,9 +1033,17 @@ Propuesta generada con CalculApp.pro
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-10"
+        >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl shadow-lg shadow-brand-200 overflow-hidden bg-white border border-slate-100">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-12 h-12 rounded-2xl shadow-lg shadow-brand-200 overflow-hidden bg-white border border-slate-100 cursor-pointer"
+            >
               <img 
                 src={LOGO_URL} 
                 alt="CalculApp.pro Logo" 
@@ -993,13 +1058,13 @@ Propuesta generada con CalculApp.pro
                   }
                 }}
               />
-            </div>
+            </motion.div>
             <div>
               <h1 className="text-2xl font-bold text-slate-900">CalculApp<span className="text-brand-600">.pro</span></h1>
               <p className="text-xs text-slate-500 font-medium tracking-wide">Presupuesto de diseños.</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Progress Bar */}
         {step < 8 && (
@@ -1038,9 +1103,14 @@ Propuesta generada con CalculApp.pro
         )}
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <motion.div 
+          layout
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden"
+        >
           <div className="p-8 sm:p-10">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {renderStep()}
             </AnimatePresence>
           </div>
@@ -1048,7 +1118,9 @@ Propuesta generada con CalculApp.pro
           {/* Navigation Footer */}
           {step < 6 && (
             <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-              <button
+              <motion.button
+                whileHover={{ x: -5 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={prevStep}
                 disabled={step === 1}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
@@ -1057,14 +1129,26 @@ Propuesta generada con CalculApp.pro
               >
                 <ChevronLeft className="w-5 h-5" />
                 Atrás
-              </button>
+              </motion.button>
               
               <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
                   <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Subtotal</p>
-                  <p className="text-lg font-bold text-slate-900">${result?.finalTotal.toLocaleString('es-CL')}</p>
+                  <AnimatePresence mode="wait">
+                    <motion.p 
+                      key={result?.finalTotal}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-lg font-bold text-slate-900"
+                    >
+                      ${result?.finalTotal.toLocaleString('es-CL')}
+                    </motion.p>
+                  </AnimatePresence>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02, x: 5 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     if (step === 1) updateHourlyRateFromCalc();
                     nextStep();
@@ -1073,11 +1157,11 @@ Propuesta generada con CalculApp.pro
                 >
                   {step === 5 ? 'Ver Resultado' : 'Siguiente'}
                   <ChevronRight className="w-5 h-5" />
-                </button>
+                </motion.button>
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Footer Info */}
         <div className="mt-8 text-center space-y-2">
