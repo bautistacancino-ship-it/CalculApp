@@ -13,14 +13,26 @@ async function startServer() {
 
   app.use(express.json());
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  if (!RESEND_API_KEY) {
-    console.warn("ADVERTENCIA: RESEND_API_KEY no está configurada en las variables de entorno.");
-  }
-  const resend = new Resend(RESEND_API_KEY);
+  app.get("/api/ping", (req, res) => {
+    res.json({ pong: true, env: { hasResendKey: !!process.env.RESEND_API_KEY } });
+  });
+
+  // Lazy initialization of Resend
+  let resend: Resend | null = null;
+  const getResend = () => {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) {
+      throw new Error("RESEND_API_KEY no está configurada");
+    }
+    if (!resend) {
+      resend = new Resend(key);
+    }
+    return resend;
+  };
 
   // API route for suggestions
   app.post("/api/suggestion", async (req, res) => {
+    console.log("POST /api/suggestion hit:", req.body);
     const { email, message } = req.body;
 
     if (!email || !message) {
@@ -28,7 +40,8 @@ async function startServer() {
     }
 
     try {
-      const { data, error } = await resend.emails.send({
+      const client = getResend();
+      const { data, error } = await client.emails.send({
         from: "CalculApp.pro <onboarding@resend.dev>",
         to: ["bautista.cancino@gmail.com"],
         subject: "Nueva Sugerencia - CalculApp.pro",

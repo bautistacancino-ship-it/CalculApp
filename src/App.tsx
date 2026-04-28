@@ -214,15 +214,20 @@ export default function App() {
         body: JSON.stringify(suggestionData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al enviar la sugerencia');
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al enviar la sugerencia');
+        }
+        setIsSuggestionOpen(false);
+        setSuggestionData({ email: '', message: '' });
+        alert('¡Sugerencia enviada con éxito!');
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('El servidor respondió con un error inesperado. Por favor intente más tarde.');
       }
-
-      // Success
-      setIsSuggestionOpen(false);
-      setSuggestionData({ email: '', message: '' });
-      alert('¡Sugerencia enviada con éxito!');
     } catch (error: any) {
       console.error('Error:', error);
       alert(error.message || 'Hubo un error al enviar tu sugerencia. Por favor intenta de nuevo.');
