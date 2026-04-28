@@ -31,9 +31,7 @@ import {
   Eye,
   FileCheck,
   Ban,
-  Shield,
-  MessageCircle,
-  Send
+  Shield
 } from 'lucide-react';
 import { BudgetState, CalculationResult } from './types';
 import { SERVICE_TYPES, DEFAULT_HOURLY_RATE, EXPERIENCE_MULTIPLIERS } from './constants';
@@ -158,11 +156,6 @@ export default function App() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<BudgetState>(INITIAL_STATE);
   const [result, setResult] = useState<CalculationResult | null>(null);
-  
-  // Suggestion Modal State
-  const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
-  const [suggestionData, setSuggestionData] = useState({ email: '', message: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load preferences
   useEffect(() => {
@@ -199,41 +192,6 @@ export default function App() {
       ...prev,
       project: { ...prev.project, hourlyRate: newRate }
     }));
-  };
-
-  const handleSendSuggestion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch('/api/suggestion', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(suggestionData),
-      });
-
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Error al enviar la sugerencia');
-        }
-        setIsSuggestionOpen(false);
-        setSuggestionData({ email: '', message: '' });
-        alert('¡Sugerencia enviada con éxito!');
-      } else {
-        const text = await response.text();
-        console.error('Non-JSON response:', text);
-        throw new Error('El servidor respondió con un error inesperado. Por favor intente más tarde.');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(error.message || 'Hubo un error al enviar tu sugerencia. Por favor intenta de nuevo.');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const renderStep = () => {
@@ -1232,106 +1190,17 @@ Propuesta generada con CalculApp.pro
         </motion.div>
 
         {/* Footer Info */}
-        <div className="mt-8 text-center space-y-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsSuggestionOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group"
-          >
-            <MessageCircle className="w-3.5 h-3.5 text-brand-500 group-hover:rotate-12 transition-transform" />
-            ¿Tienes alguna sugerencia?
-          </motion.button>
-
-          <div className="space-y-2">
-            <p className="text-slate-400 text-sm">
-              Diseñado para profesionales creativos. 
-            </p>
-            <p className="text-xs text-slate-400">
-              Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
-            </p>
-            <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
-              © 2026 CalculApp.pro Studio
-            </p>
-          </div>
+        <div className="mt-8 text-center space-y-2">
+          <p className="text-slate-400 text-sm">
+            Diseñado para profesionales creativos. 
+          </p>
+          <p className="text-xs text-slate-400">
+            Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
+          </p>
+          <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
+            © 2026 CalculApp.pro Studio
+          </p>
         </div>
-
-        {/* Suggestion Modal */}
-        <AnimatePresence>
-          {isSuggestionOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsSuggestionOpen(false)}
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 overflow-hidden"
-              >
-                <div className="p-8 sm:p-10">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-brand-50 text-brand-600 rounded-2xl">
-                        <MessageCircle className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-900">Enviar Sugerencia</h3>
-                        <p className="text-xs text-slate-500 font-medium tracking-wide">Ayúdanos a mejorar</p>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setIsSuggestionOpen(false)}
-                      className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSendSuggestion} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Tu Correo</label>
-                      <input 
-                        required
-                        type="email"
-                        placeholder="tu@email.com"
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand-500 outline-none transition-all"
-                        value={suggestionData.email}
-                        onChange={e => setSuggestionData({ ...suggestionData, email: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Mensaje</label>
-                      <textarea 
-                        required
-                        placeholder="¿Qué te gustaría ver en CalculApp.pro?"
-                        rows={4}
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand-500 outline-none transition-all resize-none custom-scrollbar"
-                        value={suggestionData.message}
-                        onChange={e => setSuggestionData({ ...suggestionData, message: e.target.value })}
-                      />
-                    </div>
-                    
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full p-4 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
-                    >
-                      {isSubmitting ? 'Enviando...' : 'Enviar por Email'}
-                      <Send className="w-4 h-4" />
-                    </motion.button>
-                  </form>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
