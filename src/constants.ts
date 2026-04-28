@@ -17,7 +17,8 @@ export const SERVICE_TYPES = [
   "Packaging",
   "Redes Sociales",
   "Editorial",
-  "Motion Graphics"
+  "Motion Graphics",
+  "Otro (Personalizado)"
 ];
 
 export const EXPERIENCE_MULTIPLIERS = {

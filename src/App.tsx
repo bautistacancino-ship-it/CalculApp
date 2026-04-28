@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const LOGO_URL = "https://lh3.googleusercontent.com/d/131Hnqre2rrpTnrQQFijkcq2vvKBSC-fS";
@@ -31,7 +31,9 @@ import {
   Eye,
   FileCheck,
   Ban,
-  Shield
+  Shield,
+  MessageCircle,
+  Send
 } from 'lucide-react';
 import { BudgetState, CalculationResult } from './types';
 import { SERVICE_TYPES, DEFAULT_HOURLY_RATE, EXPERIENCE_MULTIPLIERS } from './constants';
@@ -113,6 +115,7 @@ const INITIAL_STATE: BudgetState = {
   },
   project: {
     serviceType: SERVICE_TYPES[0],
+    customServiceType: '',
     estimatedHours: 10,
     hourlyRate: DEFAULT_HOURLY_RATE,
   },
@@ -155,6 +158,11 @@ export default function App() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<BudgetState>(INITIAL_STATE);
   const [result, setResult] = useState<CalculationResult | null>(null);
+  
+  // Suggestion Modal State
+  const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
+  const [suggestionData, setSuggestionData] = useState({ email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load preferences
   useEffect(() => {
@@ -191,6 +199,35 @@ export default function App() {
       ...prev,
       project: { ...prev.project, hourlyRate: newRate }
     }));
+  };
+
+  const handleSendSuggestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/suggestion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(suggestionData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar la sugerencia');
+      }
+
+      // Success
+      setIsSuggestionOpen(false);
+      setSuggestionData({ email: '', message: '' });
+      alert('¡Sugerencia enviada con éxito!');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Hubo un error al enviar tu sugerencia. Por favor intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -363,12 +400,28 @@ export default function App() {
                   <InfoTooltip text={HELP_TEXT.serviceType} />
                 </label>
                 <select 
-                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                  className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all mb-4"
                   value={state.project.serviceType}
                   onChange={e => setState({ ...state, project: { ...state.project, serviceType: e.target.value } })}
                 >
                   {SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
+
+                {state.project.serviceType === "Otro (Personalizado)" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nombre del Servicio Especial</label>
+                    <input 
+                      type="text" 
+                      className="w-full p-3 bg-white border border-brand-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none shadow-sm"
+                      placeholder="Ej: Auditoría de Marca, Retoque Fotográfico..."
+                      value={state.project.customServiceType}
+                      onChange={e => setState({ ...state, project: { ...state.project, customServiceType: e.target.value } })}
+                    />
+                  </motion.div>
+                )}
               </div>
 
               <div>
@@ -595,7 +648,8 @@ export default function App() {
                   <input 
                     type="number" 
                     className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                    value={state.extras.stock}
+                    placeholder="Ej: 50000"
+                    value={state.extras.stock === 0 ? '' : state.extras.stock}
                     onChange={e => setState({ ...state, extras: { ...state.extras, stock: parseFloat(e.target.value) || 0 } })}
                   />
                 </div>
@@ -607,7 +661,8 @@ export default function App() {
                   <input 
                     type="number" 
                     className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                    value={state.extras.fonts}
+                    placeholder="Ej: 25000"
+                    value={state.extras.fonts === 0 ? '' : state.extras.fonts}
                     onChange={e => setState({ ...state, extras: { ...state.extras, fonts: parseFloat(e.target.value) || 0 } })}
                   />
                 </div>
@@ -620,7 +675,8 @@ export default function App() {
                 <input 
                   type="number" 
                   className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={state.extras.externalProviders}
+                  placeholder="Ej: 100000"
+                  value={state.extras.externalProviders === 0 ? '' : state.extras.externalProviders}
                   onChange={e => setState({ ...state, extras: { ...state.extras, externalProviders: parseFloat(e.target.value) || 0 } })}
                 />
               </motion.div>
@@ -771,12 +827,16 @@ export default function App() {
           ? `\n\nTérminos y Condiciones del Servicio:\n${selectedClauses.join('\n')}`
           : '';
 
+        const displayServiceType = state.project.serviceType === "Otro (Personalizado)" 
+          ? (state.project.customServiceType || "servicio personalizado")
+          : state.project.serviceType;
+
         const proposalText = `
 Estimado(a) ${state.proposal.clientName || '[Nombre del Cliente]'} de ${state.proposal.companyName || '[Empresa]'}:
 
 Es un gusto saludarte. En relación a nuestra conversación sobre el proyecto "${state.proposal.projectTitle || 'Proyecto de Diseño'}", presento a continuación la propuesta formal para el desarrollo del mismo.
 
-El proyecto consiste en: ${state.proposal.projectDescription || '[Descripción del proyecto]'}. Para llevarlo a cabo, se contempla un servicio de ${state.project.serviceType} con una dedicación estimada de ${state.project.estimatedHours} horas de trabajo profesional.
+El proyecto consiste en: ${state.proposal.projectDescription || '[Descripción del proyecto]'}. Para llevarlo a cabo, se contempla un servicio de ${displayServiceType} con una dedicación estimada de ${state.project.estimatedHours} horas de trabajo profesional.
 
 La propuesta incluye ${state.complexity.revisions} rondas de revisiones para asegurar que el resultado final cumpla con tus expectativas ${state.complexity.includeSourceFiles ? 'e integra la entrega de todos los archivos fuente originales' : 'y la entrega de los archivos finales listos para su uso'}.
 
@@ -1132,20 +1192,22 @@ Propuesta generada con CalculApp.pro
               </motion.button>
               
               <div className="flex items-center gap-4">
-                <div className="text-right hidden sm:block">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Subtotal</p>
-                  <AnimatePresence mode="wait">
-                    <motion.p 
-                      key={result?.finalTotal}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-lg font-bold text-slate-900"
-                    >
-                      ${result?.finalTotal.toLocaleString('es-CL')}
-                    </motion.p>
-                  </AnimatePresence>
-                </div>
+                {step > 1 && (
+                  <div className="text-right hidden sm:block">
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Subtotal</p>
+                    <AnimatePresence mode="wait">
+                      <motion.p 
+                        key={result?.finalTotal}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="text-lg font-bold text-slate-900"
+                      >
+                        ${result?.finalTotal.toLocaleString('es-CL')}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.02, x: 5 }}
                   whileTap={{ scale: 0.98 }}
@@ -1164,17 +1226,106 @@ Propuesta generada con CalculApp.pro
         </motion.div>
 
         {/* Footer Info */}
-        <div className="mt-8 text-center space-y-2">
-          <p className="text-slate-400 text-sm">
-            Diseñado para profesionales creativos. 
-          </p>
-          <p className="text-xs text-slate-400">
-            Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
-          </p>
-          <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
-            © 2026 CalculApp.pro Studio
-          </p>
+        <div className="mt-8 text-center space-y-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsSuggestionOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-brand-500 group-hover:rotate-12 transition-transform" />
+            ¿Tienes alguna sugerencia?
+          </motion.button>
+
+          <div className="space-y-2">
+            <p className="text-slate-400 text-sm">
+              Diseñado para profesionales creativos. 
+            </p>
+            <p className="text-xs text-slate-400">
+              Creado por: <a href="https://www.instagram.com/bautistacancino/" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-600 font-medium transition-colors">@bautistacancino</a>
+            </p>
+            <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">
+              © 2026 CalculApp.pro Studio
+            </p>
+          </div>
         </div>
+
+        {/* Suggestion Modal */}
+        <AnimatePresence>
+          {isSuggestionOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsSuggestionOpen(false)}
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 overflow-hidden"
+              >
+                <div className="p-8 sm:p-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-brand-50 text-brand-600 rounded-2xl">
+                        <MessageCircle className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900">Enviar Sugerencia</h3>
+                        <p className="text-xs text-slate-500 font-medium tracking-wide">Ayúdanos a mejorar</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsSuggestionOpen(false)}
+                      className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSendSuggestion} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Tu Correo</label>
+                      <input 
+                        required
+                        type="email"
+                        placeholder="tu@email.com"
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                        value={suggestionData.email}
+                        onChange={e => setSuggestionData({ ...suggestionData, email: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Mensaje</label>
+                      <textarea 
+                        required
+                        placeholder="¿Qué te gustaría ver en CalculApp.pro?"
+                        rows={4}
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand-500 outline-none transition-all resize-none custom-scrollbar"
+                        value={suggestionData.message}
+                        onChange={e => setSuggestionData({ ...suggestionData, message: e.target.value })}
+                      />
+                    </div>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full p-4 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
+                    >
+                      {isSubmitting ? 'Enviando...' : 'Enviar por Email'}
+                      <Send className="w-4 h-4" />
+                    </motion.button>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

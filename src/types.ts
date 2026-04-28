@@ -1,5 +1,6 @@
 export interface ProjectData {
   serviceType: string;
+  customServiceType?: string;
   estimatedHours: number;
   hourlyRate: number;
 }
