@@ -215,16 +215,17 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al enviar la sugerencia');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al enviar la sugerencia');
       }
 
       // Success
       setIsSuggestionOpen(false);
       setSuggestionData({ email: '', message: '' });
       alert('¡Sugerencia enviada con éxito!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Hubo un error al enviar tu sugerencia. Por favor intenta de nuevo.');
+      alert(error.message || 'Hubo un error al enviar tu sugerencia. Por favor intenta de nuevo.');
     } finally {
       setIsSubmitting(false);
     }

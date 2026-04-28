@@ -2,6 +2,10 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { Resend } from "resend";
+import * as dotenv from "dotenv";
+
+// Load environment variables from .env
+dotenv.config();
 
 async function startServer() {
   const app = express();
@@ -9,7 +13,11 @@ async function startServer() {
 
   app.use(express.json());
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.warn("ADVERTENCIA: RESEND_API_KEY no está configurada en las variables de entorno.");
+  }
+  const resend = new Resend(RESEND_API_KEY);
 
   // API route for suggestions
   app.post("/api/suggestion", async (req, res) => {
